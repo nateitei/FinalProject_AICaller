@@ -1,5 +1,6 @@
-Flask
+flask
+gunicorn
 twilio
 openai
-gTTS
-streamlit
+pytz
+requests
