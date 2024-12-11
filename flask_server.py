@@ -47,11 +47,11 @@ def process_response():
 
     analysis = analyze_response_with_openai(user_response)
 
-    if "yes" or "yeah" in analysis:
+    if "yes" in analysis or "yeah" in analysis:
         response.say("Okay, great! Just checking, thanks so much! Talk to you later, okay?")
         response.pause(length=3)
         response.hangup()
-    elif "no" or "not yet" in analysis:
+    elif "no" in analysis or "not yet" in analysis:
         response.say("I really need you to send it as soon as possible, can you get to your laptop anytime soon?")
         response.pause(length=3)
         response.say("Thanks, I'll be waiting.")
