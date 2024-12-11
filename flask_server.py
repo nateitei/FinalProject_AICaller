@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 import openai
@@ -63,23 +63,28 @@ def process_response():
 
     return str(response)
 
-def initiate_call(phone_number):
+@app.route("/initiate_call", methods=["POST"])
+def initiate_call_endpoint():
+    data = request.get_json()
+    phone_number = data.get("phone_number")
     try:
         twilio_client.calls.create(
             to=phone_number,
             from_=TWILIO_PHONE_NUMBER,
-            url="https://finalproject-aicaller.onrender.com/voice"
+            url="https://your-render-url.com/voice"
         )
-        print(f"Call initiated to {phone_number}.")
+        print(f"Call successfully initiated to {phone_number}.")
+        return jsonify({"message": "Call initiated successfully"}), 200
     except Exception as e:
         print(f"Error initiating call: {e}")
+        return jsonify({"message": "Error initiating call", "error": str(e)}), 500
 
 if __name__ == "__main__":
     from gunicorn.app.base import BaseApplication
 
     class GunicornApp(BaseApplication):
         def load_config(self):
-            self.cfg.set("bind", f"0.0.0.0:{getenv('PORT', '5000')}")
+            self.cfg.set("bind", f"0.0.0.0:{os.getenv('PORT', '5000')}")
 
         def load(self):
             return app
