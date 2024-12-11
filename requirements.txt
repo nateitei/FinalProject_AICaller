@@ -6,7 +6,7 @@ gunicorn
 twilio
 
 # OpenAI
-openai==0.28.0
+openai
 
 # Streamlit and utilities
 streamlit
