@@ -8,7 +8,7 @@ import requests
 def schedule_call(phone_number, call_datetime):
     try:
         requests.post(
-            "https://your-render-url.com/initiate_call",
+            "https://finalproject-aicaller.onrender.com/initiate_call",
             json={"phone_number": phone_number, "scheduled_time": call_datetime.strftime('%Y-%m-%d %H:%M:%S')}
         )
         print(f"Scheduled call to {phone_number} at {call_datetime}.")
@@ -45,14 +45,24 @@ if st.button("Schedule Call"):
 
         if delay <= 0:
             st.success(f"Call scheduled immediately to {phone_number}.")
-            requests.post("https://your-render-url.com/initiate_call", json={"phone_number": phone_number})
+            requests.post("https://finalproject-aicaller.onrender.com/initiate_call", json={"phone_number": phone_number})
         else:
             st.success(f"Call scheduled for {call_datetime.strftime('%Y-%m-%d %I:%M %p')} to {phone_number}.")
 
             def delayed_call():
                 time.sleep(delay)
-                requests.post("https://your-render-url.com/initiate_call", json={"phone_number": phone_number})
+                requests.post("https://finalproject-aicaller.onrender.com/initiate_call", json={"phone_number": phone_number})
 
             threading.Thread(target=delayed_call).start()
     else:
         st.error("Please provide a valid phone number.")
+
+st.markdown(
+    """
+    <p style='font-size: 0.8em;'>
+    NOTE: Some of the resources used to create this project are either in Trial mode or the Free/Hobby version.<br>
+    As a result, only phone numbers manually registered in Twilio by the creator will operate functionally.
+    </p>
+    """,
+    unsafe_allow_html=True
+)
