@@ -18,7 +18,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def analyze_response_with_openai(user_response):
     try:
-        response = openai.ChatCompletion.create(
+        client = openai.Client()
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are an assistant that classifies responses as 'yes', 'no', or 'unclear'."},
