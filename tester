@@ -1,0 +1,148 @@
+### Flask Server: flask_server.py
+from flask import Flask, request
+from twilio.twiml.voice_response import VoiceResponse
+import openai
+import os
+
+app = Flask(__name__)
+
+# Twilio configuration:
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+
+# OpenAI configuration:
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def analyze_response_with_openai(user_response):
+    prompt = (
+        f"The user said: '{user_response}'. Determine if this is a yes, no, or unclear response. "
+        f"If it's unclear, suggest asking again."
+    )
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=50
+        )
+        return response.choices[0].text.strip().lower()
+    except Exception as e:
+        print(f"Error with OpenAI API: {e}")
+        return "unclear"
+
+@app.route("/voice", methods=["POST"])
+def voice():
+    response = VoiceResponse()
+    response_text = "Hey, did you send over the file that's due the day after tomorrow yet?"
+    response.say(response_text)
+
+    gather = response.gather(input="speech", timeout=5)
+    gather.say("I really need it now.")
+
+    return str(response)
+
+@app.route("/process-response", methods=["POST"])
+def process_response():
+    user_response = request.form.get("SpeechResult", "").lower()
+    response = VoiceResponse()
+
+    analysis = analyze_response_with_openai(user_response)
+
+    if "yes" in analysis:
+        response.say("Okay, great! Just checking, thanks so much! Talk to you later, okay?")
+        response.pause(length=3)
+    elif "no" in analysis:
+        response.say("I really need you to send it as soon as possible, can you get to your laptop anytime soon?")
+        response.pause(length=5)
+        response.say("Thanks so much, send it as soon as possible. I'll call back in a bit!")
+    else:
+        response.say("So, is that a 'yes' or a 'no'?")
+        response.redirect("/process-response")
+
+    return str(response)
+
+if __name__ == "__main__":
+    from gunicorn.app.base import BaseApplication
+
+    class GunicornApp(BaseApplication):
+        def load_config(self):
+            self.cfg.set("bind", "0.0.0.0:5000")
+
+        def load(self):
+            return app
+
+    GunicornApp().run()
+
+### Streamlit App: streamlit_app.py
+import streamlit as st
+from datetime import datetime
+import time
+import threading
+import requests
+
+def make_call(to_phone_number):
+    url = "http://localhost:5000/voice"
+    print(f"Simulated call to {to_phone_number} using {url}")
+
+st.title("Call Scheduler")
+
+phone_number = st.text_input("Enter Phone Number:", "")
+call_date = st.date_input("Select Date:", min_value=datetime.now().date())
+call_time = st.time_input("Select Time:", value=datetime.now().time())
+
+if st.button("Schedule Call"):
+    if phone_number:
+        call_datetime = datetime.combine(call_date, call_time)
+        now = datetime.now()
+        delay = (call_datetime - now).total_seconds()
+
+        if delay <= 0:
+            st.success(f"Call scheduled immediately to {phone_number}.")
+            make_call(phone_number)
+        else:
+            st.success(f"Call scheduled for {call_datetime} to {phone_number}.")
+
+            def delayed_call():
+                time.sleep(delay)
+                make_call(phone_number)
+
+            threading.Thread(target=delayed_call).start()
+    else:
+        st.error("Please provide a valid phone number.")
+
+### Create directories for Flask and Streamlit apps with requirements.txt
+if __name__ == "__main__":
+    import os
+
+    # Create directory for Flask server
+    flask_dir = "flask_server"
+    if not os.path.exists(flask_dir):
+        os.makedirs(flask_dir)
+        with open(os.path.join(flask_dir, "app.py"), "w") as flask_file:
+            flask_file.write(""""" + """
+from flask import Flask
+app = Flask(__name__)
+@app.route('/')
+def hello():
+    return 'Flask Server Setup'
+if __name__ == "__main__":
+    app.run()
+""")
+
+        with open(os.path.join(flask_dir, "requirements.txt"), "w") as flask_requirements:
+            flask_requirements.write("flask\ntwilio\nopenai\n")
+
+    # Create directory for Streamlit app
+    streamlit_dir = "streamlit_app"
+    if not os.path.exists(streamlit_dir):
+        os.makedirs(streamlit_dir)
+        with open(os.path.join(streamlit_dir, "app.py"), "w") as streamlit_file:
+            streamlit_file.write(""""" + """
+import streamlit as st
+st.title("Streamlit App Setup")
+""")
+
+        with open(os.path.join(streamlit_dir, "requirements.txt"), "w") as streamlit_requirements:
+            streamlit_requirements.write("streamlit\nrequests\n")
+
+    print("Directories and files created for Flask and Streamlit apps.")
