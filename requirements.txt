@@ -1,6 +1,4 @@
-flask
+Flask
 gunicorn
 twilio
 openai
-pytz
-requests
