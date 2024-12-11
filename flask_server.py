@@ -26,7 +26,7 @@ def analyze_response_with_openai(user_response):
                 {"role": "user", "content": f"The user said: '{user_response}'. Determine if this is a yes, no, or unclear response. If it's unclear, suggest asking again."}
             ]
         )
-        return response["choices"][0]["message"]["content"].strip().lower()
+        return response.choices[0].message.content.strip().lower()
     except Exception as e:
         print(f"Error with OpenAI API: {e}")
         return "unclear"
