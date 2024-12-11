@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 import time
 import threading
 import requests
@@ -8,23 +9,39 @@ def make_call(to_phone_number):
     url = "http://localhost:5000/voice"
     print(f"Simulated call to {to_phone_number} using {url}")
 
-st.title("Call Scheduler")
+def get_15_min_intervals():
+    now = datetime.now(pytz.timezone("US/Eastern"))
+    base = now.replace(second=0, microsecond=0, minute=(now.minute // 15) * 15)
+    intervals = [(base + timedelta(minutes=15 * i)).strftime("%I:%M %p") for i in range(96)]
+    return intervals
+
+st.title("AI Bail-Out Call Scheduler")
+st.markdown(
+    """
+    Have you ever been in a social situation where you found yourself thinking 
+    "Wow, I sure wish someone would call me with an excuse to leave the thing I'm currently finding myself in", 
+    but you don't want to bother any family or friends beforehand? Fear not! Just schedule a call right here. 
+    You'll have a potential excuse to leave in a jiffy!
+    """
+)
 
 phone_number = st.text_input("Enter Phone Number:", "")
-call_date = st.date_input("Select Date:", min_value=datetime.now().date())
-call_time = st.time_input("Select Time:", value=datetime.now().time())
+call_date = st.date_input("Select Date:", min_value=datetime.now(pytz.timezone("US/Eastern")).date())
+call_time_options = get_15_min_intervals()
+call_time = st.selectbox("Select Time (EST):", call_time_options)
 
 if st.button("Schedule Call"):
     if phone_number:
-        call_datetime = datetime.combine(call_date, call_time)
-        now = datetime.now()
+        selected_time = datetime.strptime(call_time, "%I:%M %p").time()
+        call_datetime = datetime.combine(call_date, selected_time).replace(tzinfo=pytz.timezone("US/Eastern"))
+        now = datetime.now(pytz.timezone("US/Eastern"))
         delay = (call_datetime - now).total_seconds()
 
         if delay <= 0:
             st.success(f"Call scheduled immediately to {phone_number}.")
             make_call(phone_number)
         else:
-            st.success(f"Call scheduled for {call_datetime} to {phone_number}.")
+            st.success(f"Call scheduled for {call_datetime.strftime('%Y-%m-%d %I:%M %p')} to {phone_number}.")
 
             def delayed_call():
                 time.sleep(delay)
