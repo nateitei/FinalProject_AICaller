@@ -5,9 +5,15 @@ import time
 import threading
 import requests
 
-def make_call(to_phone_number):
-    url = "https://finalproject-aicaller.onrender.com/voice"
-    print(f"Simulated call to {to_phone_number} using {url}")
+def schedule_call(phone_number, call_datetime):
+    try:
+        requests.post(
+            "https://finalproject-aicaller.onrender.com/initiate_call",
+            json={"phone_number": phone_number, "scheduled_time": call_datetime.strftime('%Y-%m-%d %H:%M:%S')}
+        )
+        print(f"Scheduled call to {phone_number} at {call_datetime}.")
+    except Exception as e:
+        print(f"Error scheduling call: {e}")
 
 def get_15_min_intervals():
     now = datetime.now(pytz.timezone("US/Eastern"))
@@ -25,7 +31,7 @@ st.markdown(
     """
 )
 
-phone_number = st.text_input("Enter Phone Number:", "")
+phone_number = st.text_input("Enter Phone Number (+1XXXXXXXXXX format):", "")
 call_date = st.date_input("Select Date:", min_value=datetime.now(pytz.timezone("US/Eastern")).date())
 call_time_options = get_15_min_intervals()
 call_time = st.selectbox("Select Time (EST):", call_time_options)
@@ -39,13 +45,13 @@ if st.button("Schedule Call"):
 
         if delay <= 0:
             st.success(f"Call scheduled immediately to {phone_number}.")
-            make_call(phone_number)
+            requests.post("https://finalproject-aicaller.onrender.com/initiate_call", json={"phone_number": phone_number})
         else:
             st.success(f"Call scheduled for {call_datetime.strftime('%Y-%m-%d %I:%M %p')} to {phone_number}.")
 
             def delayed_call():
                 time.sleep(delay)
-                make_call(phone_number)
+                requests.post("https://finalproject-aicaller.onrender.com/initiate_call", json={"phone_number": phone_number})
 
             threading.Thread(target=delayed_call).start()
     else:
