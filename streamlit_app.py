@@ -6,7 +6,7 @@ import threading
 import requests
 
 def make_call(to_phone_number):
-    url = "http://localhost:5000/voice"
+    url = "https://finalproject-aicaller.onrender.com/voice"
     print(f"Simulated call to {to_phone_number} using {url}")
 
 def get_15_min_intervals():
