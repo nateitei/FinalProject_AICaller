@@ -35,12 +35,9 @@ def analyze_response_with_openai(user_response):
 @app.route("/voice", methods=["POST"])
 def voice():
     response = VoiceResponse()
-    response_text = "Hey, did you send over the file that's due the day after tomorrow yet?"
-    response.say(response_text)
-
-    gather = response.gather(input="speech", timeout=5)
-    gather.say("I really need it now.")
-
+    gather = response.gather(input="speech", action="/process-response", method="POST", timeout=3)
+    gather.say("Hey, did you send over the file that's due the day after tomorrow yet?")
+    response.append(gather)
     return str(response)
 
 @app.route("/process-response", methods=["POST"])
@@ -50,16 +47,21 @@ def process_response():
 
     analysis = analyze_response_with_openai(user_response)
 
-    if "yes" in analysis:
+    if "yes" or "yeah" in analysis:
         response.say("Okay, great! Just checking, thanks so much! Talk to you later, okay?")
         response.pause(length=3)
-    elif "no" in analysis:
+        response.hangup()
+    elif "no" or "not yet" in analysis:
         response.say("I really need you to send it as soon as possible, can you get to your laptop anytime soon?")
-        response.pause(length=5)
-        response.say("Thanks so much, send it as soon as possible. I'll call back in a bit!")
+        response.pause(length=3)
+        response.say("Thanks, I'll be waiting.")
+        response.pause(length=3)
+        response.hangup()
     else:
         response.say("So, is that a 'yes' or a 'no'?")
-        response.redirect("/process-response")
+        gather = response.gather(input="speech", action="/process-response", method="POST", timeout=5)
+        gather.say("Please repeat, is that a yes or no?")
+        response.append(gather)
 
     return str(response)
 
