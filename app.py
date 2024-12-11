@@ -57,10 +57,10 @@ def process_response():
 
     analysis = analyze_response_with_openai(user_response)
 
-    if "yes" in analysis:
+    if "yes" or "yeah" in analysis:
         response.say("Okay, great! Just checking, thanks so much! Talk to you later, okay?")
         response.pause(length=3)
-    elif "no" in analysis:
+    elif "no" or "not yet" in analysis:
         response.say("I really need you to send it as soon as possible, can you get to your laptop anytime soon?")
         response.pause(length=5)
         response.say("Thanks so much, send it as soon as possible. I'll call back in a bit!")
@@ -85,7 +85,7 @@ def make_call(to_phone_number):
     call = client.calls.create(
         to=to_phone_number,
         from_=TWILIO_PHONE_NUMBER,
-        url="http://your-server-url/voice"  # Flask app's endpoint URL
+        url="https://finalproject-aicaller.onrender.com"  # Flask app's endpoint URL
     )
 
     print(f"Call initiated. Call SID: {call.sid}")
