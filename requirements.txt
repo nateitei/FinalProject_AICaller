@@ -1,5 +1,14 @@
+# Flask and related libraries
 Flask
+gunicorn
+
+# Twilio
 twilio
-openai
-gTTS
+
+# OpenAI
+openai==0.28.0
+
+# Streamlit and utilities
 streamlit
+pytz
+requests
