@@ -71,7 +71,7 @@ def initiate_call_endpoint():
         twilio_client.calls.create(
             to=phone_number,
             from_=TWILIO_PHONE_NUMBER,
-            url="https://your-render-url.com/voice"
+            url="https://finalproject-aicaller.onrender.com/voice"
         )
         print(f"Call successfully initiated to {phone_number}.")
         return jsonify({"message": "Call initiated successfully"}), 200
