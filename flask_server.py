@@ -18,14 +18,15 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def analyze_response_with_openai(user_response):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an assistant helping to classify responses."},
-                {"role": "user", "content": f"The user said: '{user_response}'. Determine if this is a yes, no, or unclear response. If it's unclear, suggest asking again."}
-            ]
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=(
+                f"The user said: '{user_response}'. Determine if this is a yes, no, or unclear response. "
+                f"If it's unclear, suggest asking again."
+            ),
+            max_tokens=50
         )
-        return response['choices'][0]['message']['content'].strip().lower()
+        return response.choices[0].text.strip().lower()
     except Exception as e:
         print(f"Error with OpenAI API: {e}")
         return "unclear"
