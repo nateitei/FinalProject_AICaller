@@ -1,4 +1,0 @@
-mkdir flask_server
-mkdir streamlit_app
-mv flask_server.py flask_server/app.py
-mv streamlit_app.py streamlit_app/app.py
