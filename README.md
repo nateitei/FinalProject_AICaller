@@ -1,4 +1,4 @@
-**NOTE:** In order for this to run, the phone number being supplied to the Streamlit UI must be pre-registered with Twilio's Caller ID's due to this entire project being run on either Trial modes or Free/Hobby versions.
+**NOTE:** In order for this to run, the phone number being supplied to the Streamlit UI must be pre-registered with Twilio's Caller ID's due to most of this project being run on either Trial modes or Free/Hobby versions.
 
 Additionally, the Render backend is currently running out of the flask branch, rather than the main.
 
